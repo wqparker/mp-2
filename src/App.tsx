@@ -2,7 +2,7 @@ import MetropolitanMuseumArt from "./components/MetropolitanMuseumArt.tsx";
 import styled from "styled-components";
 import {useEffect, useState} from "react";
 import {Art} from "./interfaces/Art.ts";
-
+ 
 const ParentDiv=styled.div`
     width: 80vw;
     margin: auto;

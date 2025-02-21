@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import {Art} from "../interfaces/Art.ts";
-
+ 
 const AllCharsDiv=styled.div`
     display: flex;
     flex-flow: row wrap;    
