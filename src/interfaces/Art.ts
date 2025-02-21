@@ -4,4 +4,3 @@ export interface Art {
     culture: string;
     primaryImage: string;
   }
- 
