@@ -1,7 +1,7 @@
-import RickAndMorty from "./components/RickAndMorty.tsx";
+import MetropolitanMuseumArt from "./components/MetropolitanMuseumArt.tsx";
 import styled from "styled-components";
 import {useEffect, useState} from "react";
-import {Character} from "./interfaces/Charcters.ts";
+import {Art} from "./interfaces/Art.ts";
 
 const ParentDiv=styled.div`
     width: 80vw;
@@ -12,24 +12,44 @@ const ParentDiv=styled.div`
 export default function App(){
 
     // useState Hook to store Data.
-    const [data, setData] = useState<Character[]>([]);
+    const [data, setData] = useState<Art[]>([]);
 
     // useEffect Hook for error handling and re-rendering.
     useEffect(() => {
         async function fetchData(): Promise<void> {
-            const rawData = await fetch("https://rickandmortyapi.com/api/character");
-            const {results} : {results: Character[]} = await rawData.json();
-            setData(results);
+          // Grab raw data, in this case a list of object ids
+          const rawData = await fetch("https://collectionapi.metmuseum.org/public/collection/v1/objects");
+          const { objectIDs } = await rawData.json();
+      
+          // Grab portion of the objects since there are many many thousands
+          // I settled on this range to avoid weird entries and repeat entries
+          const selectedIDs = objectIDs.slice(120, 220);
+      
+          // Fetch object details for selected range in parallel
+          // This step is needed as in contrast to the Rick and Morty api, the initial call above
+          // only returns a list of object ids, we must then grab the info (img, title, etc) for each id respectively
+          const arts = await Promise.all(
+            selectedIDs.map(async (id: number) => {
+              const artResponse = await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`);
+              return artResponse.json();
+            })
+          );
+      
+          // Filter out those with empty images
+          // Lots of objects had no image, I decided to filter these out and not display them
+          const artsWithImages = arts.filter((art) => art.primaryImage && art.primaryImage !== "");
+          setData(artsWithImages);
         }
+      
         fetchData()
-            .then(() => console.log("Data fetched successfully"))
-            .catch((e: Error) => console.log("There was the error: " + e));
-    }, [data.length]);
+          .then(() => console.log("Data fetched successfully"))
+          .catch((e: Error) => console.error("There was an error: " + e));
+      }, [data.length]);
+      
 
     return(
         <ParentDiv>
-            <RickAndMorty data={data}/>
+            <MetropolitanMuseumArt data={data}/>
         </ParentDiv>
     )
 }
-
